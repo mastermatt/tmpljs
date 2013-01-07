@@ -13,7 +13,7 @@
     document = window.document,
     rparse =  /(\s*)([a-z]*)(\(\))?([.#$\s].*)?/i,
     rmods =  /([.#$])([a-z\-_]+)/ig,
-    rhandleBars = /(?:^|[^\\])\{(.*?[^\\])\}/,
+    rhandleBars = /(^|[^\\])\{(.*?[^\\])\}/,
 
     tmpl = function( template, data )
     {
@@ -35,9 +35,18 @@
         classes,
         objCache = {},
 
-        replacer = function( match, key )
+        replacer = function( match, lead, key )
         {
-            return data[key] || "";
+            var val = data[key] || "";
+
+            if( $.isFunction( val ) )
+                val = val.call( data );
+
+            // In order to have escapeable opening curly brackets,
+            //  we have to capture the character before the bracket
+            //  then append it back in.
+            //  Without lookbehinds in js, is there a better way to do this?
+            return lead + val;
         };
 
         for( itemIndex in template )
@@ -110,15 +119,17 @@
             if( !mods )
                 continue;
 
-            // look for text content
+            // look for text content after the mods
             indexOfText = mods.indexOf( " " );
 
-            if( indexOfText > 0 )
+            if( indexOfText != -1 )
             {
                 textVal = mods.substr( indexOfText + 1 );
                 mods = mods.substr( 0, indexOfText );
 
-                el.innerHTML = textVal.replace( rhandleBars, replacer );
+                // Set the value if the objects has one,
+                // otherwise set innerHTML
+                el[ "value" in el ? "value" : "innerHTML" ] = textVal.replace( rhandleBars, replacer );
             }
 
             // Reset the classes vars

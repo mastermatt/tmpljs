@@ -14,6 +14,7 @@
     rparse =  /(\s*)([a-z]*)(\(\))?([.#$\s].*)?/i,
     rmods =  /([.#$])([a-z\-_]+)/ig,
     rhandleBars = /(^|[^\\])\{(.*?[^\\])\}/,
+    setValuesFor = [ "input", "textarea" ],
 
     tmpl = function( template, data )
     {
@@ -79,6 +80,8 @@
                         $el = el;
                         el = el[0];
                     }
+                    else if( el.nodeType !== 1 )
+                        throw 1;
                 }
                 catch(e)
                 {
@@ -124,18 +127,21 @@
 
             if( indexOfText != -1 )
             {
-                textVal = mods.substr( indexOfText + 1 );
+                textVal = mods.substr( indexOfText + 1 )
+                    .replace( rhandleBars, replacer );
+
                 mods = mods.substr( 0, indexOfText );
 
-                // Set the value if the objects has one,
+                // Set the value for the tags we want to,
                 // otherwise set innerHTML
-                el[ "value" in el ? "value" : "innerHTML" ] = textVal.replace( rhandleBars, replacer );
+                if( $.inArray( el.tagName.toLowerCase(), setValuesFor ) < 0 )
+                    el.innerHTML = textVal;
+                else
+                    el.value = textVal;
             }
 
-            // Reset the classes vars
-            // Start with an empty string so if the element already
-            // has a class the concat will put a space in 
-            classes = [""];
+            // Reset the classes var
+            classes = [];
 
             // Loop the mods
             while( ( matches = rmods.exec( mods ) ) !== null )
@@ -158,7 +164,8 @@
             }
 
             // Attach the classes at once
-            el.className += classes.join( " " );
+            if( classes.length )
+                el.className += " " + classes.join( " " );
         }
 
         ret.c = ret.cache = objCache;

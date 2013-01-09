@@ -25,15 +25,10 @@
     
         var
         ret = $(),
-        parent,
-        el, $el, lastEl,
-        depth, lastDepth = 0,
         itemIndex,
-        indexOfText, textVal,
-        matches,
-        tag,
-        mods, modVal,
-        classes,
+        parent,
+        lastEl,
+        lastDepth = 0,
         objCache = {},
 
         replacer = function( match, lead, key )
@@ -52,9 +47,20 @@
 
         for( itemIndex in template )
         {
-            matches = rparse.exec( template[ itemIndex ] );
-            tag = matches[2];
-            mods = matches[4];
+            var
+            matches = rparse.exec( template[ itemIndex ] ),
+            tag = matches[2],
+            mods = matches[4],
+            el, $el,
+            indexOfText, textVal,
+            modVal,
+            classes = [],
+
+            // The amount of white space that starts the string
+            // defines its depth in the DOM tree
+            // Four spaces to a level, add one to compensate for
+            // the quote character then floor the value
+            depth = ( ( matches[1].length + 1 ) / 4 ) | 0;
             
             // console.log( matches );
 
@@ -92,13 +98,7 @@
             {
                 // Create the element, default to div if not declared
                 el = document.createElement( tag || "div" );
-            }            
-
-            // The amount of white space that starts the string
-            // defines its depth in the DOM tree
-            // Four spaces to a level, add one to compensate for
-            // the quote character then floor the value
-            depth = ( ( matches[1].length + 1 ) / 4 ) | 0;
+            }          
 
             if( depth && parent )
             {
@@ -139,9 +139,6 @@
                 else
                     el.value = textVal;
             }
-
-            // Reset the classes var
-            classes = [];
 
             // Loop the mods
             while( ( matches = rmods.exec( mods ) ) !== null )

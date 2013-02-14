@@ -1,5 +1,5 @@
 ﻿/*
- * tmpljs 0.1
+ * tmpljs 0.2
  * A DOM element based templating engine with
  *  a logic-less Zen Coding-like markup, object caching, partials and variables
  * 
@@ -12,7 +12,7 @@
     var
     document = window.document,
     rparse =  /(\s*)([a-z]*)(\(\))?([.#$\s].*)?/i,
-    rmods =  /([.#$])([a-z\-_]+)/ig,
+    rmods =  /([.#$])([a-z0-9\-_]+)/ig,
     rhandleBars = /(^|[^\\])\{(.*?[^\\])\}/,
     setValuesFor = [ "input", "textarea" ],
 

@@ -1,5 +1,5 @@
 /*
- * tmpljs 0.3
+ * tmpljs 0.4
  * A DOM element based templating engine with
  *  a logic-less Zen Coding-like markup, object caching, partials and variables
  *
@@ -12,6 +12,7 @@
     var
     document = window.document,
     rparse = /(\s*)([a-z0-9]*)(\(\))?([.#$\s].*)?/i,
+    rattrs = /\[([a-z\-]+)=?([^\]]*)\]/ig,
     rmods = /([.#$])([a-z0-9\-_]+)/ig,
     rhandleBars = /(^|[^\\])\{(.*?[^\\])\}/g,
     setValuesFor = ["input", "textarea"], // set value instead of innerhtml for these tags
@@ -139,6 +140,12 @@
                     el.innerHTML = textVal;
                 else
                     el.value = textVal;
+            }
+
+            // Loop the attributes
+            while ((matches = rattrs.exec(mods)) !== null)
+            {
+                el.setAttribute(matches[1], matches[2] || matches[1]);
             }
 
             // Loop the mods

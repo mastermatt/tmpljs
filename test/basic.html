@@ -4,37 +4,41 @@
         <title>tmpljs basic test</title>
     </head>
     <body>
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
         <script src="../tmpl.js"></script>
         <script>
-        
+
         $(function(){
-        
-        
+
+
             var template = [
                 "div",
                 "   .hello This div has a class of 'hello'",
                 "   p().world {myvar} yeah",
                 "   form#mainForm",
                 "       input$theinput Default text",
-                "div",
+                "div[data-main=cat]",
                 "   p$wrapper",
-                "       span x{getSomeText}"
+                "       span x{getSomeText}",
+                "       span x {x.anothervar}"
             ],
 
             data = {
                 myvar: "oh",
                 p: function(){return document.createElement("p")},
-                getSomeText: function(){console.log(this); return "Some Text"; }
+                getSomeText: function(){console.log(this); return "Some Text"; },
+				x: {
+					anothervar: "dog"
+				}
             };
-            
+
             window.x = $.tmpl( template, data );
             console.log( x );
             $("body").append( x );
 
             x.c.theinput.focus();
         })
-            
+
         </script>
     </body>
 </html>

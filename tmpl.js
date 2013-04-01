@@ -1,5 +1,5 @@
 /*
- * tmpljs 0.4
+ * tmpljs 0.5
  * A DOM element based templating engine with
  *  a logic-less Zen Coding-like markup, object caching, partials and variables
  *
@@ -10,12 +10,12 @@
     "use strict";
 
     var
-    document = window.document,
-    rparse = /(\s*)([a-z0-9]*)(\(\))?([.#$\s].*)?/i,
+    rparse = /^(\s*)([a-z0-9]*)(\(\))?(.*)$/i,
     rattrs = /\[([a-z\-]+)=?([^\]]*)\]/ig,
     rmods = /([.#$])([a-z0-9\-_]+)/ig,
-    rhandleBars = /(^|[^\\])\{(.*?[^\\])\}/g,
+    rvariables = /(^|[^\\])\{(.*?[^\\])\}/g,
     setValuesFor = ["input", "textarea"], // set value instead of innerhtml for these tags
+    isFunction = $.isFunction,
 
     tmpl = function(template, data)
     {
@@ -32,18 +32,27 @@
         lastDepth = 0,
         objCache = {},
 
+        // turn dot notation in the string into object reference
+        dotToRef = function(notation, object)
+        {
+            return notation.split(".").reduce(function(obj, i) {
+                return obj[i];
+            }, object);
+        },
+
+        // replace variables in strings
         replacer = function(match, lead, key)
         {
-            var val = data[key] || "";
+            var val = dotToRef(key, data);
 
-            if ($.isFunction(val))
+            if (isFunction(val))
                 val = val.call(data);
 
             // In order to have escapeable opening curly brackets,
             //  we have to capture the character before the bracket
             //  then append it back in.
             //  Without lookbehinds in js, is there a better way to do this?
-            return lead + val;
+            return lead + ( val  || "" );
         };
 
         for (itemIndex in template)
@@ -52,10 +61,9 @@
             matches = rparse.exec(template[itemIndex]),
             tag = matches[2],
             mods = matches[4],
-            el,
+            el = 0,
             $el = 0,
-            indexOfText, textVal,
-            modVal,
+            indexOfText, textVal, modVal,
             classes = [],
 
             // The amount of white space that starts the string
@@ -73,30 +81,21 @@
 
             // matches[3] is truthy if parenthiese were provided after the tag name
             // so we consider it a fn call
-            if (matches[3])
+            if (matches[3] && isFunction(data[tag]))
             {
-                // Use a try because we cant guarantee the method is in the object
-                try
-                {
-                    el = data[tag].call(data);
+                el = data[tag].call(data);
 
-                    // If a jQuery object is returned with mulitipule items,
-                    // the whole object can be cached, but only the first
-                    // item is used in the object that is retuned from this plugin
-                    if (el instanceof $)
-                    {
-                        $el = el;
-                        el = el[0];
-                    }
-                    else if (el.nodeType !== 1)
-                        throw 1;
-                }
-                catch (e)
+                // If a jQuery object is returned with mulitipule items,
+                // the whole object can be cached, but only the first
+                // item is used in the object that is retuned from this plugin
+                if (el instanceof $)
                 {
-                    el = document.createElement("div");
+                    $el = el;
+                    el = el[0];
                 }
             }
-            else
+
+            if (!el || el.nodeType !== 1)
             {
                 // Create the element, default to div if not declared
                 el = document.createElement(tag || "div");
@@ -130,7 +129,7 @@
             if (indexOfText !== -1)
             {
                 textVal = mods.substr(indexOfText + 1)
-                            .replace(rhandleBars, replacer);
+                            .replace(rvariables, replacer);
 
                 mods = mods.substr(0, indexOfText);
 
@@ -145,6 +144,8 @@
             // Loop the attributes
             while ((matches = rattrs.exec(mods)) !== null)
             {
+                //[placeholder=Hello]   -> placeholder="Hello"
+                //[disabled]            -> disabled="disabled"
                 el.setAttribute(matches[1], matches[2] || matches[1]);
             }
 
@@ -170,7 +171,10 @@
 
             // Attach the classes at once
             if (classes.length)
-                el.className += " " + classes.join(" ");
+            {
+                classes.push(el.className);
+                el.className = classes.join(" ");
+            }
         }
 
         ret.c = ret.cache = objCache;

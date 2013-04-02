@@ -1,5 +1,5 @@
 /*
- * tmpljs 0.5
+ * tmpljs 0.6
  * A DOM element based templating engine with
  *  a logic-less Zen Coding-like markup, object caching, partials and variables
  *
@@ -15,7 +15,7 @@
     rmods = /([.#$])([a-z0-9\-_]+)/ig,
     rvariables = /(^|[^\\])\{(.*?[^\\])\}/g,
     setValuesFor = ["input", "textarea"], // set value instead of innerhtml for these tags
-    isFunction = $.isFunction,
+    isFunction = $.isFunction, // just for compression
 
     tmpl = function(template, data)
     {
@@ -41,7 +41,7 @@
         },
 
         // replace variables in strings
-        replacer = function(match, lead, key)
+        varReplacer = function(match, lead, key)
         {
             var val = dotToRef(key, data);
 
@@ -60,10 +60,10 @@
             var
             matches = rparse.exec(template[itemIndex]),
             tag = matches[2],
-            mods = matches[4],
+            postTag = matches[4],
             el = 0,
             $el = 0,
-            indexOfText, textVal, modVal,
+            indexOfSpace, textVal, modVal,
             classes = [],
 
             // The amount of white space that starts the string
@@ -74,9 +74,9 @@
 
             // console.log( matches );
 
-            // Make sure there is atleast a tag or mod declared
+            // Make sure there is atleast a tag or postTag declared
             // basically, skip empty lines
-            if (!tag && !mods)
+            if (!tag && !postTag)
                 continue;
 
             // matches[3] is truthy if parenthiese were provided after the tag name
@@ -87,7 +87,7 @@
 
                 // If a jQuery object is returned with mulitipule items,
                 // the whole object can be cached, but only the first
-                // item is used in the object that is retuned from this plugin
+                // item is used in the object that is returned from this plugin
                 if (el instanceof $)
                 {
                     $el = el;
@@ -95,6 +95,7 @@
                 }
             }
 
+            // ensure we have a proper ELEMENT_NODE in our el variable
             if (!el || el.nodeType !== 1)
             {
                 // Create the element, default to div if not declared
@@ -119,19 +120,33 @@
             lastDepth = depth;
             lastEl = el;
 
-            // Don't bother with the rest if there's no mods
-            if (!mods)
+            // Don't bother with the rest if there's no mods or text
+            if (!postTag)
                 continue;
 
-            // look for text content after the mods
-            indexOfText = mods.indexOf(" ");
+            // Search for attributes
+            // attach them to the element and remove the characters
+            // from the postTag string, this allows us to have spaces in the attr values
+            //
+            //[placeholder=Hello World] -> placeholder="Hello World"
+            //[disabled]                -> disabled="disabled"
+            postTag = postTag.replace(rattrs, function(match, attr, val){
+                el.setAttribute(attr, val || attr);
+                return "";
+            });
 
-            if (indexOfText !== -1)
+            // look for text content after the mods via a space character
+            indexOfSpace = postTag.indexOf(" ");
+
+            if (indexOfSpace !== -1)
             {
-                textVal = mods.substr(indexOfText + 1)
-                            .replace(rvariables, replacer);
+                // strip everything after the first space to use it as the text
+                // value and run it through the replace func to replace variables
+                textVal = postTag.substr(indexOfSpace + 1)
+                            .replace(rvariables, varReplacer);
 
-                mods = mods.substr(0, indexOfText);
+                // remove the text from the postTag so that only mods remain
+                postTag = postTag.substr(0, indexOfSpace);
 
                 // Set the value for the tags we want to,
                 // otherwise set innerHTML
@@ -141,16 +156,8 @@
                     el.value = textVal;
             }
 
-            // Loop the attributes
-            while ((matches = rattrs.exec(mods)) !== null)
-            {
-                //[placeholder=Hello]   -> placeholder="Hello"
-                //[disabled]            -> disabled="disabled"
-                el.setAttribute(matches[1], matches[2] || matches[1]);
-            }
-
             // Loop the mods
-            while ((matches = rmods.exec(mods)) !== null)
+            while ((matches = rmods.exec(postTag)) !== null)
             {
                 modVal = matches[2];
 
@@ -169,7 +176,7 @@
                 }
             }
 
-            // Attach the classes at once
+            // Attach all the classes at once
             if (classes.length)
             {
                 classes.push(el.className);

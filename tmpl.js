@@ -1,7 +1,9 @@
 /*
- * tmpljs 0.6
+ * tmpljs 0.7
  * A DOM element based templating engine with
  *  a logic-less Zen Coding-like markup, object caching, partials and variables
+ *
+ *  https://github.com/mastermatt/tmpljs
  *
  * Requires jQuery 1.4+
  */
@@ -10,13 +12,51 @@
     "use strict";
 
     var
-    rparse = /^(\s*)([a-z0-9]*)(\(\))?(.*)$/i,
-    rattrs = /\[([a-z\-]+)=?([^\]]*)\]/ig,
-    rmods = /([.#$])([a-z0-9\-_]+)/ig,
-    rvariables = /(^|[^\\])\{(.*?[^\\])\}/g,
-    setValuesFor = ["input", "textarea"], // set value instead of innerhtml for these tags
-    isFunction = $.isFunction, // just for compression
 
+    // regex to break the main string into parts
+    // example "   getTag(p, 6).world[placeholder=some text] {myvar} yeah"
+    // matches
+    //      1: leading spaces   "   "
+    //      2: tag name         "getTag"
+    //      3: parenthese       "(p, 6)"
+    //      4: method args      "p, 6"
+    //      5: everthing else   ".world[placeholder=some text] {myvar} yeah"
+    rparse = /^(\s*)([\w-]*)(\((.*)\))?(.*)$/,
+
+    // regex for explicitly stated attributes ( the stuff in square brackets )
+    // matches
+    //      1: attribute name   "placeholder"
+    //      2: value            "some text"
+    rattrs = /\[([\w-]+)=?([^\]]*)\]/g,
+
+    // regex for the modifiers ( class, id, cache )
+    // matches
+    //      1: type flag        ".", "#", "$"
+    //      2: value            from the example above "world"
+    rmods = /([.#$])([\w-]+)/g,
+
+    // regex for the handlbar type variable syntax in text
+    // matches
+    //      1: start or leading character, chech comments in varReplacer() for why
+    //      2: variable key
+    rvariables = /(^|[^\\])\{(.*?[^\\])\}/g,
+
+    // set the value property instead of innerhtml for these tags
+    setValuesFor = ["input", "textarea"],
+
+    // just for compression
+    isFunction = $.isFunction,
+
+    // Turn dot notation in a string into object reference
+    // example "a.b.c" on a = {b:{c:variable}} will return variable
+    dotToRef = function(notation, object)
+    {
+        return notation.split(".").reduce(function(current, i) {
+            return current[i];
+        }, object);
+    },
+
+    // The actual plugin function
     tmpl = function(template, data)
     {
         if (!$.isArray(template))
@@ -31,14 +71,6 @@
         lastEl,
         lastDepth = 0,
         objCache = {},
-
-        // turn dot notation in the string into object reference
-        dotToRef = function(notation, object)
-        {
-            return notation.split(".").reduce(function(obj, i) {
-                return obj[i];
-            }, object);
-        },
 
         // replace variables in strings
         varReplacer = function(match, lead, key)
@@ -60,7 +92,7 @@
             var
             matches = rparse.exec(template[itemIndex]),
             tag = matches[2],
-            postTag = matches[4],
+            postTag = matches[5],
             el = 0,
             $el = 0,
             indexOfSpace, textVal, modVal,
@@ -70,20 +102,22 @@
             // defines its depth in the DOM tree
             // Four spaces to a level, add one to compensate for
             // the quote character then floor the value
+            // examples
+            //  "tag"        : 0 spaces = 0
+            //  "   tag"     : 3 spaces = 1
+            //  "       tag" : 7 spaces = 2
             depth = ((matches[1].length + 1) / 4) | 0;
-
-            // console.log( matches );
 
             // Make sure there is atleast a tag or postTag declared
             // basically, skip empty lines
             if (!tag && !postTag)
                 continue;
 
-            // matches[3] is truthy if parenthiese were provided after the tag name
+            // matches[3] is truthy if parenthese were provided after the tag name
             // so we consider it a fn call
             if (matches[3] && isFunction(data[tag]))
             {
-                el = data[tag].call(data);
+                el = data[tag].apply(data, matches[4].split(","));
 
                 // If a jQuery object is returned with mulitipule items,
                 // the whole object can be cached, but only the first
@@ -95,7 +129,7 @@
                 }
             }
 
-            // ensure we have a proper ELEMENT_NODE in our el variable
+            // Ensure we have a proper ELEMENT_NODE in our el variable
             if (!el || el.nodeType !== 1)
             {
                 // Create the element, default to div if not declared
@@ -157,7 +191,7 @@
             }
 
             // Loop the mods
-            while ((matches = rmods.exec(postTag)) !== null)
+            while (matches = rmods.exec(postTag))
             {
                 modVal = matches[2];
 
@@ -176,19 +210,26 @@
                 }
             }
 
+            // add any classes a partal may have added to the classes list
+            if (el.className)
+            {
+                classes.push(el.className);
+            }
+
             // Attach all the classes at once
             if (classes.length)
             {
-                classes.push(el.className);
                 el.className = classes.join(" ");
             }
         }
 
+        // Alias the object cache as "cache" and "c"
         ret.c = ret.cache = objCache;
 
         return ret;
     };
 
+    // Add as a jQuery plugin
     $.extend({tmpl: tmpl});
 
 })(jQuery);

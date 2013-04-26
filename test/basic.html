@@ -14,30 +14,32 @@
             var template = [
                 "div",
                 "   .hello This div has a class of 'hello'",
-                "   p().world {myvar} yeah",
+                "   getTag(p).world {myvar} yeah",
                 "   form#mainForm",
                 "       input$theinput Default text",
-                "div[data-main=cat]",
+                "div[data-main=cat in the hat]",
                 "   p$wrapper",
-                "       span x{getSomeText}",
-                "       span x {x.anothervar}"
+                "       span a {getAnAnimal} is an animal, ",
+                "       span another animal is a {x.anotherAnimal}"
             ],
 
             data = {
                 myvar: "oh",
-                p: function(){return document.createElement("p")},
-                getSomeText: function(){console.log(this); return "Some Text"; },
+                getTag: function(tagName){ return document.createElement(tagName);},
+                getAnAnimal: function(){ return this.animal; },
+                animal: "cat",
 				x: {
-					anothervar: "dog"
+					anotherAnimal: "dog"
 				}
-            };
+            },
 
-            window.x = $.tmpl( template, data );
-            console.log( x );
-            $("body").append( x );
+            compiled = $.tmpl( template, data );
 
-            x.c.theinput.focus();
-        })
+            console.log( compiled );
+            $("body").append( compiled );
+
+            compiled.c.theinput.focus();
+        });
 
         </script>
     </body>

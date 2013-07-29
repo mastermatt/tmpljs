@@ -7,7 +7,8 @@
  *
  * Requires jQuery 1.4+
  */
-(function($) {
+
+(function ($) {
 
     "use strict";
 
@@ -49,64 +50,61 @@
 
     // Turn dot notation in a string into object reference
     // example "a.b.c" on a = {b:{c:variable}} will return variable
-    dotToRef = function(notation, object)
-    {
-        return notation.split(".").reduce(function(current, i) {
-            return current[i];
-        }, object);
+    dotToRef = function (notation, object) {
+        return notation.split(".")
+            .reduce(function (current, i) {
+                return current[i];
+            }, object);
     },
 
     // The actual plugin function
-    tmpl = function(template, data)
-    {
+    tmpl = function (template, data) {
+
         if (!$.isArray(template))
             template = [];
 
         data = data || {};
 
-        var
-        ret = $(),
-        itemIndex,
-        parent,
-        lastEl,
-        lastDepth = 0,
-        objCache = {},
+        var ret = $(),
+            itemIndex,
+            parent,
+            lastEl,
+            lastDepth = 0,
+            objCache = {},
 
-        // replace variables in strings
-        varReplacer = function(match, lead, key)
-        {
-            var val = dotToRef(key, data);
+            // replace variables in strings
+            varReplacer = function (match, lead, key) {
+                var val = dotToRef(key, data);
 
-            if (isFunction(val))
-                val = val.call(data);
+                if (isFunction(val))
+                    val = val.call(data);
 
-            // In order to have escapeable opening curly brackets,
-            //  we have to capture the character before the bracket
-            //  then append it back in.
-            //  Without lookbehinds in js, is there a better way to do this?
-            return lead + ( val  || "" );
-        };
+                // In order to have escapeable opening curly brackets,
+                //  we have to capture the character before the bracket
+                //  then append it back in.
+                //  Without lookbehinds in js, is there a better way to do this?
+                return lead + (val || "");
+            };
 
-        for (itemIndex in template)
-        {
-            var
-            matches = rparse.exec(template[itemIndex]),
-            tag = matches[2],
-            postTag = matches[5],
-            el = 0,
-            $el = 0,
-            indexOfSpace, textVal, modVal,
-            classes = [],
+        for (itemIndex in template) {
 
-            // The amount of white space that starts the string
-            // defines its depth in the DOM tree
-            // Four spaces to a level, add one to compensate for
-            // the quote character then floor the value
-            // examples
-            //  "tag"        : 0 spaces = 0
-            //  "   tag"     : 3 spaces = 1
-            //  "       tag" : 7 spaces = 2
-            depth = ((matches[1].length + 1) / 4) | 0;
+            var matches = rparse.exec(template[itemIndex]),
+                tag = matches[2],
+                postTag = matches[5],
+                el = 0,
+                $el = 0,
+                indexOfSpace, textVal, modVal,
+                classes = [],
+
+                // The amount of white space that starts the string
+                // defines its depth in the DOM tree
+                // Four spaces to a level, add one to compensate for
+                // the quote character then floor the value
+                // examples
+                //  "tag"        : 0 spaces = 0
+                //  "   tag"     : 3 spaces = 1
+                //  "       tag" : 7 spaces = 2
+                depth = ((matches[1].length + 1) / 4) | 0;
 
             // Make sure there is atleast a tag or postTag declared
             // basically, skip empty lines
@@ -115,29 +113,25 @@
 
             // matches[3] is truthy if parenthese were provided after the tag name
             // so we consider it a fn call
-            if (matches[3] && isFunction(data[tag]))
-            {
+            if (matches[3] && isFunction(data[tag])) {
                 el = data[tag].apply(data, matches[4].split(","));
 
                 // If a jQuery object is returned with mulitipule items,
                 // the whole object can be cached, but only the first
                 // item is used in the object that is returned from this plugin
-                if (el instanceof $)
-                {
+                if (el instanceof $) {
                     $el = el;
                     el = el[0];
                 }
             }
 
             // Ensure we have a proper ELEMENT_NODE in our el variable
-            if (!el || el.nodeType !== 1)
-            {
+            if (!el || el.nodeType !== 1) {
                 // Create the element, default to div if not declared
                 el = document.createElement(tag || "div");
             }
 
-            if (depth && parent)
-            {
+            if (depth && parent) {
                 if (depth > lastDepth) // nest in last element
                     parent = lastEl;
 
@@ -145,9 +139,7 @@
                     parent = parent.parentNode;
 
                 parent.appendChild(el);
-            }
-            else
-            {
+            } else {
                 ret.push(parent = el);
             }
 
@@ -162,9 +154,9 @@
             // attach them to the element and remove the characters
             // from the postTag string, this allows us to have spaces in the attr values
             //
-            //[placeholder=Hello World] -> placeholder="Hello World"
-            //[disabled]                -> disabled="disabled"
-            postTag = postTag.replace(rattrs, function(match, attr, val){
+            // [placeholder=Hello World] -> placeholder="Hello World"
+            // [disabled]                -> disabled="disabled"
+            postTag = postTag.replace(rattrs, function (match, attr, val) {
                 el.setAttribute(attr, val || attr);
                 return "";
             });
@@ -172,12 +164,11 @@
             // look for text content after the mods via a space character
             indexOfSpace = postTag.indexOf(" ");
 
-            if (indexOfSpace !== -1)
-            {
+            if (indexOfSpace !== -1) {
                 // strip everything after the first space to use it as the text
                 // value and run it through the replace func to replace variables
                 textVal = postTag.substr(indexOfSpace + 1)
-                            .replace(rvariables, varReplacer);
+                    .replace(rvariables, varReplacer);
 
                 // remove the text from the postTag so that only mods remain
                 postTag = postTag.substr(0, indexOfSpace);
@@ -191,34 +182,30 @@
             }
 
             // Loop the mods
-            while (matches = rmods.exec(postTag))
-            {
+            while (matches = rmods.exec(postTag)) {
                 modVal = matches[2];
 
-                switch (matches[1])
-                {
-                    case ".": // Add class
-                        classes.push(modVal);
-                        break;
+                switch (matches[1]) {
+                case ".": // Add class
+                    classes.push(modVal);
+                    break;
 
-                    case "#": // Set id
-                        el.id = modVal;
-                        break;
+                case "#": // Set id
+                    el.id = modVal;
+                    break;
 
-                    case "$": // cache jQueryized element for later
-                        objCache[ modVal ] = $el || $(el);
+                case "$": // cache jQueryized element for later
+                    objCache[modVal] = $el || $(el);
                 }
             }
 
             // add any classes a partal may have added to the classes list
-            if (el.className)
-            {
+            if (el.className) {
                 classes.push(el.className);
             }
 
             // Attach all the classes at once
-            if (classes.length)
-            {
+            if (classes.length) {
                 el.className = classes.join(" ");
             }
         }
@@ -230,6 +217,6 @@
     };
 
     // Add as a jQuery plugin
-    $.extend({tmpl: tmpl});
+    $.extend({ tmpl: tmpl });
 
 })(jQuery);

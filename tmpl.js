@@ -1,5 +1,5 @@
 /*
- * tmpljs 0.7
+ * tmpljs 0.8
  * A DOM element based templating engine with
  *  a logic-less Zen Coding-like markup, object caching, partials and variables
  *
@@ -79,11 +79,14 @@
                 if (isFunction(val))
                     val = val.call(data);
 
+                if (null == val)
+                    val = "";
+
                 // In order to have escapeable opening curly brackets,
                 //  we have to capture the character before the bracket
                 //  then append it back in.
                 //  Without lookbehinds in js, is there a better way to do this?
-                return lead + (val || "");
+                return lead + val;
             };
 
         for (itemIndex in template) {
@@ -186,16 +189,16 @@
                 modVal = matches[2];
 
                 switch (matches[1]) {
-                case ".": // Add class
-                    classes.push(modVal);
-                    break;
+                    case ".": // Add class
+                        classes.push(modVal);
+                        break;
 
-                case "#": // Set id
-                    el.id = modVal;
-                    break;
+                    case "#": // Set id
+                        el.id = modVal;
+                        break;
 
-                case "$": // cache jQueryized element for later
-                    objCache[modVal] = $el || $(el);
+                    case "$": // cache jQueryized element for later
+                        objCache[modVal] = $el || $(el);
                 }
             }
 

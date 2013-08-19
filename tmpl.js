@@ -14,31 +14,31 @@
 
     var
 
-    // regex to break the main string into parts
+    // Regex to break the main string into parts
     // example "   getTag(p, 6).world[placeholder=some text] {myvar} yeah"
     // matches
     //      1: leading spaces   "   "
     //      2: tag name         "getTag"
-    //      3: parenthese       "(p, 6)"
+    //      3: parentheses       "(p, 6)"
     //      4: method args      "p, 6"
-    //      5: everthing else   ".world[placeholder=some text] {myvar} yeah"
+    //      5: everything else   ".world[placeholder=some text] {myvar} yeah"
     rparse = /^(\s*)([\w-]*)(\((.*)\))?(.*)$/,
 
-    // regex for explicitly stated attributes ( the stuff in square brackets )
+    // Regex for explicitly stated attributes ( the stuff in square brackets )
     // matches
     //      1: attribute name   "placeholder"
     //      2: value            "some text"
     rattrs = /\[([\w-]+)=?([^\]]*)\]/g,
 
-    // regex for the modifiers ( class, id, cache )
+    // Regex for the modifiers ( class, id, cache )
     // matches
     //      1: type flag        ".", "#", "$"
     //      2: value            from the example above "world"
     rmods = /([.#$])([\w-]+)/g,
 
-    // regex for the handlbar type variable syntax in text
+    // Regex for the handlebar type variable syntax in text
     // matches
-    //      1: start or leading character, chech comments in varReplacer() for why
+    //      1: start or leading character, check comments in varReplacer() for why
     //      2: variable key
     rvariables = /(^|[^\\])\{(.*?[^\\])\}/g,
 
@@ -72,7 +72,7 @@
             lastDepth = 0,
             objCache = {},
 
-            // replace variables in strings
+            // Replace variables in strings
             varReplacer = function (match, lead, key) {
                 var val = dotToRef(key, data);
 
@@ -109,17 +109,17 @@
                 //  "       tag" : 7 spaces = 2
                 depth = ((matches[1].length + 1) / 4) | 0;
 
-            // Make sure there is atleast a tag or postTag declared
+            // Make sure there is at least a tag or postTag declared
             // basically, skip empty lines
             if (!tag && !postTag)
                 continue;
 
-            // matches[3] is truthy if parenthese were provided after the tag name
+            // matches[3] is truthy if parentheses were provided after the tag name
             // so we consider it a fn call
             if (matches[3] && isFunction(data[tag])) {
                 el = data[tag].apply(data, matches[4].split(","));
 
-                // If a jQuery object is returned with mulitipule items,
+                // If a jQuery object is returned with multiple items,
                 // the whole object can be cached, but only the first
                 // item is used in the object that is returned from this plugin
                 if (el instanceof $) {
@@ -154,7 +154,7 @@
                 continue;
 
             // Search for attributes
-            // attach them to the element and remove the characters
+            // Attach them to the element and remove the characters
             // from the postTag string, this allows us to have spaces in the attr values
             //
             // [placeholder=Hello World] -> placeholder="Hello World"
@@ -164,16 +164,16 @@
                 return "";
             });
 
-            // look for text content after the mods via a space character
+            // Look for text content after the mods via a space character
             indexOfSpace = postTag.indexOf(" ");
 
             if (indexOfSpace !== -1) {
-                // strip everything after the first space to use it as the text
+                // Strip everything after the first space to use it as the text
                 // value and run it through the replace func to replace variables
                 textVal = postTag.substr(indexOfSpace + 1)
                     .replace(rvariables, varReplacer);
 
-                // remove the text from the postTag so that only mods remain
+                // Remove the text from the postTag so that only mods remain
                 postTag = postTag.substr(0, indexOfSpace);
 
                 // Set the value for the tags we want to,
@@ -185,24 +185,24 @@
             }
 
             // Loop the mods
-            while (matches = rmods.exec(postTag)) {
+            while ((matches = rmods.exec(postTag))) {
                 modVal = matches[2];
 
                 switch (matches[1]) {
-                    case ".": // Add class
-                        classes.push(modVal);
-                        break;
+                case ".": // Add class
+                    classes.push(modVal);
+                    break;
 
-                    case "#": // Set id
-                        el.id = modVal;
-                        break;
+                case "#": // Set id
+                    el.id = modVal;
+                    break;
 
-                    case "$": // cache jQueryized element for later
-                        objCache[modVal] = $el || $(el);
+                case "$": // cache jQueryized element for later
+                    objCache[modVal] = $el || $(el);
                 }
             }
 
-            // add any classes a partal may have added to the classes list
+            // Add any classes a partial may have added to the classes list
             if (el.className) {
                 classes.push(el.className);
             }

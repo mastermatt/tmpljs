@@ -1,7 +1,9 @@
 tmpljs
 =======
 
-A DOM element based templating engine with a logic-less Zen Coding-like markup, object caching, partials and variables
+A DOM element based templating engine, as a jQuery plugin, with a logic-less Zen Coding-like markup, object caching, partials and variables.
+
+I wrote this because it seemed silly to create a string of markup, make the DOM parse it, then query it to do any manipulation; when it's faster to create elements in js, save a reference if desired, then pass objects to the DOM.
 
 * The plugin requires only one parameter, an array of strings, where each string is to become a single DOM element.
 * Optionally a second object parameter can be supplied for partials and variables.

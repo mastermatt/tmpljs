@@ -47,12 +47,16 @@
     var isFunction = $.isFunction;
 
     // Turn dot notation in a string into object reference
-    // example "a.b.c" on a = {b:{c:variable}} will return variable
-    var dotToRef = function (notation, object) {
-        return notation.split(".")
-            .reduce(function (current, i) {
-                return current[i];
-            }, object);
+    // example dotToRef("a.b.c", {a:{b:{c:42}}}) will return 42
+    var dotToRef = function(notation, object) {
+        // reverse/pop is faster than shift
+        dotPath = notation.split(".").reverse();
+
+        while (dotSegment = dotPath.pop()) {
+            object = object[dotSegment];
+        }
+
+        return object;
     };
 
     // scratch vars
@@ -61,6 +65,8 @@
     var indexOfSpace;
     var textVal;
     var modVal;
+    var dotPath;
+    var dotSegment;
 
     // The actual plugin function
     var tmpl = function(template, data) {

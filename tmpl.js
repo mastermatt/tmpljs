@@ -34,11 +34,10 @@
     //      2: value            from the example above "world"
     var rmods = /([.#$])([\w-]+)/g;
 
-    // Regex for the handlebar type variable syntax in text
-    // matches
-    //      1: start or leading character, check comments in varReplacer() for why
+    // Regex for the handlebar type variable syntax in text matches
+    //      1: a bang for escaping literal brackets
     //      2: variable key
-    var rvariables = /(^|[^\\])\{(.*?[^\\])\}/g;
+    var rvariables = /\{(!?)([^\s|\}]*)\}/g;
 
     // set the `value` property instead of `innerHTML` for these tags
     var setValuesFor = ["input", "textarea"];
@@ -84,7 +83,14 @@
         var objCache = {};
 
         // Replace variables in strings
-        var varReplacer = function(match, lead, key) {
+        var varReplacer = function(match, skip, key) {
+
+            // when a bang is supplied after the opening bracket, the brackets are treated as
+            // literal and the string is returned like it was.
+            if (skip) {
+                return "{" + key + "}";
+            }
+
             var val = dotToRef(key, data);
 
             if (isFunction(val)) {
@@ -95,11 +101,7 @@
                 val = "";
             }
 
-            // In order to have escapable opening curly brackets,
-            //  we have to capture the character before the bracket
-            //  then append it back in.
-            //  Without lookbehinds in js, is there a better way to do this?
-            return lead + val;
+            return val;
         };
 
         while (templateIndex < templateLength) {

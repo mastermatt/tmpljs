@@ -78,7 +78,8 @@ describe('Basic templating', function() {
     it('should replace variables', function() {
 
         var template = [
-            "div {dark} fish, {sad} fish, {age.elderly} fish, {age.recent} fish."
+            "div {dark} fish, {sad} fish, {age.elderly} fish, {age.recent} fish.",
+            "div Don't {verb} {!my} braces. {!}"
         ];
 
         var data = {
@@ -89,12 +90,14 @@ describe('Basic templating', function() {
                 "recent": function() {
                     return "New";
                 }
-            }
+            },
+            "verb": "touch"
         };
 
         var compiled = $.tmpl(template, data);
 
         expect(compiled[0].innerHTML).toBe("Black fish, Blue fish, Old fish, New fish.");
+        expect(compiled[1].innerHTML).toBe("Don't touch {my} braces. {}");
     });
 
     it('should execute partials', function() {

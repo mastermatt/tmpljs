@@ -93,8 +93,10 @@ Curly brackets `{}` can be wrapped around key identifiers in the text for variab
 If the key references a function in the data object, that function will be called using the data object as the `this` value.
 The function should return a string or something that equates to one.
 
-**Note:** Dot notation can be used inside the curly brackets to traverse the data object, but *can not* be used for partials because the engine will think you're declaring a class.
-
+**Note:** Dot notation can be used inside the curly brackets to traverse the data object, 
+but *can not* be used for partials because the engine will think you're declaring a class.
+**NOTE:** Literal curly brackets can be displayed by adding a bang (!) directly after the 
+opening bracket. `{!cat}` -> `{cat}`
 ```js
 var
   template =

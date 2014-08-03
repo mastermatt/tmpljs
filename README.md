@@ -1,4 +1,4 @@
-tmpljs
+tmpljs [![Build Status](https://travis-ci.org/mastermatt/tmpljs.png?branch=master)](https://travis-ci.org/mastermatt/tmpljs)
 =======
 
 A DOM element based templating engine, as a jQuery plugin, with a logic-less Zen Coding-like markup, object caching, partials and variables.

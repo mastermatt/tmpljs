@@ -132,7 +132,13 @@
             // matches[3] is truthy if parentheses were provided after the tag name
             // so we consider it a fn call
             if (matches[3] && isFunction(data[tag])) {
-                el = data[tag].apply(data, matches[4].split(","));
+                el = data[tag].apply(data, $.map(matches[4].split(","), $.trim));
+
+                // allow partials to return falsy values and have this line in the template skipped
+                // useful for partials that implement conditional logic
+                if (!el) {
+                    continue;
+                }
 
                 // If a jQuery object is returned with multiple items,
                 // the whole object can be cached, but only the first

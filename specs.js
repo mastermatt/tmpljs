@@ -13,9 +13,9 @@ describe('Basic templating', function() {
         expect(compiled instanceof jQuery).toBe(true);
         expect(compiled.length).toBe(3);
 
-        expect(compiled[0].tagName.toLowerCase()).toBe("p");
-        expect(compiled[1].tagName.toLowerCase()).toBe("div");
-        expect(compiled[2].tagName.toLowerCase()).toBe("span");
+        expect(compiled[0].tagName).toBe("P");
+        expect(compiled[1].tagName).toBe("DIV");
+        expect(compiled[2].tagName).toBe("SPAN");
 
         expect(compiled[0].id).toBe("paragraph");
         expect(compiled[1].className).toBe("a-class");
@@ -104,7 +104,7 @@ describe('Basic templating', function() {
 
         var template = [
             "red()",
-            "blue(sad,glad)"
+            "blue(sad, glad)"
         ];
 
         var data = {

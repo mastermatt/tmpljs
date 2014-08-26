@@ -81,9 +81,10 @@ compiled.cache.myinput.focus();
 The plugin takes an optional second parameter that can be used for partials in place of the tag and variable replacement inside of the HTML content.
 
 Instead of providing a tag name, a function reference for the optional data object can be used to integrate partials,
-by ending the tag name with open and close parenthese `()`. Parameters can be passed to the method in the standard comma separated syntax.
+by ending the tag name with open and close parentheses `()`. Parameters can be passed to the method in the standard comma separated syntax.
 
-The function should return either a DOM element or a jQuery object. If it doesn't or the function can not be found in the data object, a div will be used instead.
+The function should return either a DOM element or a jQuery object. `false` can also be used to 
+skip the line, useful for partials the execute conditional logic.
 
 The function will be called using the data object as the `this` value.
 
@@ -93,8 +94,8 @@ Curly brackets `{}` can be wrapped around key identifiers in the text for variab
 If the key references a function in the data object, that function will be called using the data object as the `this` value.
 The function should return a string or something that equates to one.
 
-**Note:** Dot notation can be used inside the curly brackets to traverse the data object, 
-but *can not* be used for partials because the engine will think you're declaring a class.
+**Note:** Dot notation can be used inside the curly brackets or for partials to traverse 
+the data object.
 
 ```js
 var

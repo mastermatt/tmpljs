@@ -104,22 +104,29 @@ describe('Basic templating', function() {
 
         var template = [
             "red()",
-            "blue(sad, glad)"
+            "blue(sad, glad)",
+            "green.purple()"
         ];
 
         var data = {
             "red": function() {
             },
             "blue": function() {
+            },
+            "green": {
+                "purple": function() {
+                }
             }
         };
 
         spyOn(data, "red");
         spyOn(data, "blue");
+        spyOn(data.green, "purple");
 
         $.tmpl(template, data);
 
         expect(data.red).toHaveBeenCalled();
         expect(data.blue).toHaveBeenCalledWith("sad", "glad");
+        expect(data.green.purple).toHaveBeenCalled();
     });
 });

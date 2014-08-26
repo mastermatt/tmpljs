@@ -1,5 +1,5 @@
 /*
- * tmpljs 0.9.0
+ * tmpljs 0.10.0
  * A DOM element based templating engine with
  *  a logic-less Zen Coding-like markup, object caching, partials and variables
  *
@@ -13,14 +13,14 @@
     "use strict";
 
     // Regex to break the main string into parts
-    // example "   getTag(p, 6).world[placeholder=some text] {myvar} yeah"
+    // example "   myFunc(p, 6).world[placeholder=some text] {myVar} yeah"
     // matches
-    //      1: leading spaces   "   "
-    //      2: tag name         "getTag"
-    //      3: parentheses       "(p, 6)"
-    //      4: method args      "p, 6"
-    //      5: everything else   ".world[placeholder=some text] {myvar} yeah"
-    var rline = /^(\s*)([\w-]*)(\((.*)\))?(.*)$/;
+    //      1: leading spaces                   "   "
+    //      2: tag name or partial signature    "myFunc(p, 6)"
+    //      3: partial name                     "myFunc"
+    //      4: partial args                     "p, 6"
+    //      5: everything else                  ".world[placeholder=some text] {myVar} yeah"
+    var rline = /^(\s*)(([\w.-]*)\((.*)\)|[\w-]*)(.*)$/;
 
     // Regex for explicitly stated attributes ( the stuff in square brackets )
     // matches
@@ -42,17 +42,15 @@
     // set the `value` property instead of `innerHTML` for these tags
     var setValuesFor = ["input", "textarea"];
 
-    // just for compression
-    var isFunction = $.isFunction;
-
     // Turn dot notation in a string into object reference
     // example dotToRef("a.b.c", {a:{b:{c:42}}}) will return 42
     var dotToRef = function(notation, object) {
         // reverse/pop is faster than shift
-        dotPath = notation.split(".").reverse();
+        var segments = notation.split(".").reverse();
+        var segment;
 
-        while (dotSegment = dotPath.pop()) {
-            object = object[dotSegment];
+        while (segment = segments.pop()) {
+            object = object[segment];
         }
 
         return object;
@@ -64,17 +62,16 @@
     var indexOfSpace;
     var textVal;
     var modVal;
-    var dotPath;
-    var dotSegment;
 
     // The actual plugin function
-    var tmpl = function(template, data) {
+    var tmpl = function(template, data, partials) {
 
         if (!$.isArray(template)) {
             template = [];
         }
 
         data = data || {};
+        partials = partials || data;
 
         var ret = $();
         var templateIndex = 0;
@@ -93,7 +90,7 @@
 
             var val = dotToRef(key, data);
 
-            if (isFunction(val)) {
+            if ($.isFunction(val)) {
                 val = val.call(data);
             }
 
@@ -107,7 +104,8 @@
         while (templateIndex < templateLength) {
 
             var matches = rline.exec(template[templateIndex++]);
-            var tag = matches[2];
+            var tagName = matches[2];
+            var partialName = matches[3];
             var postTag = matches[5];
             var el = false;
             var $el = false;
@@ -123,16 +121,16 @@
             //  "       tag" : 7 spaces = 2
             var depth = ((matches[1].length + 1) / 4) | 0;
 
-            // Make sure there is at least a tag or postTag declared
+            // Make sure there is at least a tag, partial or postTag declared
             // basically, skip empty lines
-            if (!tag && !postTag) {
+            if (!tagName && !postTag) {
                 continue;
             }
 
-            // matches[3] is truthy if parentheses were provided after the tag name
-            // so we consider it a fn call
-            if (matches[3] && isFunction(data[tag])) {
-                el = data[tag].apply(data, $.map(matches[4].split(","), $.trim));
+            if (partialName) {
+                // call the partial function with clean arguments
+                el = dotToRef(partialName, partials)
+                    .apply(partials, $.map(matches[4].split(","), $.trim));
 
                 // allow partials to return falsy values and have this line in the template skipped
                 // useful for partials that implement conditional logic
@@ -152,7 +150,7 @@
             // Ensure we have a proper ELEMENT_NODE in our el variable
             if (!el || el.nodeType !== 1) {
                 // Create the element, default to div if not declared
-                el = document.createElement(tag || "div");
+                el = document.createElement(tagName || "div");
             }
 
             if (depth && parentEl) {

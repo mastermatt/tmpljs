@@ -12,6 +12,9 @@
 
     "use strict";
 
+    // set the `value` property instead of `innerHTML` for these tags
+    var setValuesFor = ["input", "textarea"];
+
     // Regex to break the main string into parts
     // example "   myFunc(p, 6).world[placeholder=some text] {myVar} yeah"
     // matches
@@ -20,32 +23,29 @@
     //      3: partial name                     "myFunc"
     //      4: partial args                     "p, 6"
     //      5: everything else                  ".world[placeholder=some text] {myVar} yeah"
-    var rline = /^(\s*)(([\w.-]*)\((.*)\)|[\w-]*)(.*)$/;
+    var regLine = /^(\s*)(([\w.-]*)\((.*)\)|[\w-]*)(.*)$/;
 
     // Regex for explicitly stated attributes ( the stuff in square brackets )
     // matches
     //      1: attribute name   "placeholder"
     //      2: value            "some text"
-    var rattrs = /\[([\w-]+)=?([^\]]*)\]/g;
+    var regAttributes = /\[([\w-]+)=?([^\]]*)\]/g;
 
     // Regex for the modifiers ( class, id, cache )
     // matches
     //      1: type flag        ".", "#", "$"
     //      2: value            from the example above "world"
-    var rmods = /([.#$])([\w-]+)/g;
+    var regModifiers = /([.#$])([\w-]+)/g;
 
     // Regex for the handlebar type variable syntax in text matches
     //      1: a bang for escaping literal brackets
     //      2: variable key
-    var rvariables = /\{([!&]?)\s*([^\s\}]*)\s*\}/g;
-
-    // set the `value` property instead of `innerHTML` for these tags
-    var setValuesFor = ["input", "textarea"];
+    var regVariables = /\{([!&]?)\s*([^\s\}]*)\s*\}/g;
 
     // escape HTML entities
     // https://www.owasp.org/index.php/XSS_(Cross_Site_Scripting)_Prevention_Cheat_Sheet (rule #1)
     // loving borrowed from handlebars.js and mustache.js
-    var rescape = /[&<>"'`\/]/g;
+    var regEscapeCharacters = /[&<>"'`\/]/g;
 
     var escapeCharacterLookup = {
         "&": "&amp;",
@@ -123,12 +123,12 @@
                 return val;
             }
 
-            return val.replace(rescape, escapeCharacters);
+            return val.replace(regEscapeCharacters, escapeCharacters);
         };
 
         while (templateIndex < templateLength) {
 
-            var matches = rline.exec(template[templateIndex++]);
+            var matches = regLine.exec(template[templateIndex++]);
             var tagName = matches[2];
             var partialName = matches[3];
             var postTag = matches[5];
@@ -206,7 +206,7 @@
             //
             // [placeholder=Hello World] -> placeholder="Hello World"
             // [disabled]                -> disabled="disabled"
-            postTag = postTag.replace(rattrs, function(match, attr, val) {
+            postTag = postTag.replace(regAttributes, function(match, attr, val) {
                 el.setAttribute(attr, val || attr);
                 return "";
             });
@@ -218,7 +218,7 @@
                 // Strip everything after the first space to use it as the text
                 // value and run it through the replace func to replace variables
                 textVal = postTag.substr(indexOfSpace + 1)
-                    .replace(rvariables, varReplacer);
+                    .replace(regVariables, varReplacer);
 
                 // Remove the text from the postTag so that only mods remain
                 postTag = postTag.substr(0, indexOfSpace);
@@ -233,7 +233,7 @@
             }
 
             // Loop the mods
-            while ((matches = rmods.exec(postTag))) {
+            while ((matches = regModifiers.exec(postTag))) {
                 modVal = matches[2];
 
                 switch (matches[1]) {

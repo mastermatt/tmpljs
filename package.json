@@ -1,6 +1,6 @@
 {
     "name": "tmpl.js",
-    "version": "0.10.0",
+    "version": "0.11.0",
     "description": "A DOM element based templating engine with a logic-less Zen Coding-like markup, object caching, partials and variables",
     "directories": {},
     "dependencies": {},

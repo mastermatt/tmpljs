@@ -1,5 +1,5 @@
 /*
- * tmpljs 0.10.0
+ * tmpljs 0.11.0
  * A DOM element based templating engine with
  *  a logic-less Zen Coding-like markup, object caching, partials and variables
  *
@@ -37,10 +37,29 @@
     // Regex for the handlebar type variable syntax in text matches
     //      1: a bang for escaping literal brackets
     //      2: variable key
-    var rvariables = /\{(!?)([^\s|\}]*)\}/g;
+    var rvariables = /\{([!&]?)\s*([^\s\}]*)\s*\}/g;
 
     // set the `value` property instead of `innerHTML` for these tags
     var setValuesFor = ["input", "textarea"];
+
+    // escape HTML entities
+    // https://www.owasp.org/index.php/XSS_(Cross_Site_Scripting)_Prevention_Cheat_Sheet (rule #1)
+    // loving borrowed from handlebars.js and mustache.js
+    var rescape = /[&<>"'`\/]/g;
+
+    var escapeCharacterLookup = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#x27;",
+        "`": "&#x60;", // IE can quote attributes with ticks too
+        "/": '&#x2F;'
+    };
+
+    var escapeCharacters = function(character) {
+        return escapeCharacterLookup[character];
+    };
 
     // Turn dot notation in a string into object reference
     // example dotToRef("a.b.c", {a:{b:{c:42}}}) will return 42
@@ -80,12 +99,12 @@
         var objCache = {};
 
         // Replace variables in strings
-        var varReplacer = function(match, skip, key) {
+        var varReplacer = function(match, flag, key) {
 
             // when a bang is supplied after the opening bracket, the brackets are treated as
-            // literal and the string is returned like it was.
-            if (skip) {
-                return "{" + key + "}";
+            // literal and the string is returned like it was (minus the bang).
+            if ("!" === flag) {
+                return "{" + match.slice(2)
             }
 
             var val = dotToRef(key, data);
@@ -98,7 +117,13 @@
                 val = "";
             }
 
-            return val;
+            // ignore the default behavior of escaping HTML entities when an
+            // ampersand flag is provided.
+            if ("&" === flag) {
+                return val;
+            }
+
+            return val.replace(rescape, escapeCharacters);
         };
 
         while (templateIndex < templateLength) {

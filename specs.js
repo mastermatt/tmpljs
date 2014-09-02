@@ -78,7 +78,7 @@ describe('Basic templating', function() {
     it('should replace variables', function() {
 
         var template = [
-            "div {dark} fish, {sad} fish, {age.elderly} fish, {age.recent} fish.",
+            "div {dark} fish, {sad} fish, { age.elderly  } fish, {age.recent} fish.",
             "div Don't {verb} {!my} braces. {!}"
         ];
 
@@ -98,6 +98,38 @@ describe('Basic templating', function() {
 
         expect(compiled[0].innerHTML).toBe("Black fish, Blue fish, Old fish, New fish.");
         expect(compiled[1].innerHTML).toBe("Don't touch {my} braces. {}");
+    });
+
+    it('should escape HTML entities in variables', function() {
+
+        var template = [
+            "div {one}",
+            "div {two}",
+            "div {&three}"
+        ];
+
+        var data = {
+            "one": "<input value=\"How's life?\" />",
+            "two": "<div>Ben & Jerry's</div>",
+            "three": "<p>raw HTML</p>"
+        };
+
+        var compiled = $.tmpl(template, data);
+
+        // Testing escaped characters from the DOM is a bit tricky.
+        // The issue is that node.innerHTML will return a string with quotes and slashes
+        // un-escaped even when it's set properly with an escaped string.
+        // So instead we attach the expected string to the DOM as well and compare the results.
+        // It's possible for false positives to pass this test. Will need to fix at some point.
+        var node = $("div").appendTo("body");
+
+        node.html("&lt;input value=&quot;How&#x27;s life?&quot; &#x2F&gt;");
+        expect(compiled[0].innerHTML).toBe(node[0].innerHTML);
+
+        node.html("&lt;div&gt;Ben &amp; Jerry&#x27;s&lt;&#x2F;div&gt;");
+        expect(compiled[1].innerHTML).toBe(node[0].innerHTML);
+
+        expect(compiled[2].innerHTML).toBe("<p>raw HTML</p>");
     });
 
     it('should execute partials', function() {

@@ -1,5 +1,5 @@
 /*
- * tmpljs 0.11.0
+ * tmpljs 0.12.0
  * A DOM element based templating engine with
  *  a logic-less Zen Coding-like markup, object caching, partials and variables
  *
@@ -64,12 +64,12 @@
     // Turn dot notation in a string into object reference
     // example dotToRef("a.b.c", {a:{b:{c:42}}}) will return 42
     var dotToRef = function(notation, object) {
-        // reverse/pop is faster than shift
-        var segments = notation.split(".").reverse();
-        var segment;
+        var segments = notation.split(".");
+        var i = 0;
+        var len = segments.length;
 
-        while (segment = segments.pop()) {
-            object = object[segment];
+        for (; i < len;) {
+            object = object[segments[i++]];
         }
 
         return object;
@@ -86,7 +86,7 @@
     var tmpl = function(template, data, partials) {
 
         if (!$.isArray(template)) {
-            template = [];
+            throw "template must be array";
         }
 
         data = data || {};
@@ -204,10 +204,10 @@
             // Attach them to the element and remove the characters
             // from the postTag string, this allows us to have spaces in the attr values
             //
-            // [placeholder=Hello World] -> placeholder="Hello World"
-            // [disabled]                -> disabled="disabled"
+            // input[placeholder=Hello World] - <input placeholder="Hello World" />
+            // input[disabled]                - <input disabled />
             postTag = postTag.replace(regAttributes, function(match, attr, val) {
-                el.setAttribute(attr, val || attr);
+                el.setAttribute(attr, val || "");
                 return "";
             });
 
@@ -268,6 +268,12 @@
     };
 
     // Add as a jQuery plugin
-    $.extend({ tmpl: tmpl });
+    $.tmpl = tmpl;
+
+    $.fn.tmpl = function(template, data, partials) {
+        return this.empty().each(function() {
+            $(this).append(tmpl(template, data, partials));
+        });
+    };
 
 })(jQuery);

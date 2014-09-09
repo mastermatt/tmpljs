@@ -24,6 +24,22 @@ describe('Basic templating', function() {
         expect(compiled.cache.handle instanceof jQuery).toBe(true);
     });
 
+    it('should iterate over a jQuery object', function() {
+
+        var template = [
+            "label",
+            "   input"
+        ];
+
+        var nodes = $("<div></div><div></div>");
+        var returned = nodes.tmpl(template);
+
+        var parent = $("<div></div>").append(nodes);
+        var expected = "<div><label><input></label></div><div><label><input></label></div>";
+        expect(parent.html()).toBe(expected);
+        expect(returned instanceof $).toBe(true);
+    });
+
     it('should nest DOM elements', function() {
 
         var template = [

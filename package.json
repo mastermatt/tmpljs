@@ -3,7 +3,9 @@
     "version": "0.12.0",
     "description": "A DOM element based templating engine with a logic-less Zen Coding-like markup, object caching, partials and variables",
     "directories": {},
-    "dependencies": {},
+    "dependencies": {
+        "jquery": ">=1.4.0"
+    },
     "devDependencies": {
         "grunt": "~0.4.2",
         "grunt-contrib-jasmine": "^0.6.5",
@@ -15,5 +17,12 @@
     "repository": {
         "type": "git",
         "url": "git@github.com:mastermatt/tmpljs.git"
-    }
+    },
+    "bugs": "https://github.com/mastermatt/tmpljs/issues",
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "http://www.opensource.org/licenses/mit-license.php"
+        }
+    ]
 }

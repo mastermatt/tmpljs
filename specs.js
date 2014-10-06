@@ -28,7 +28,7 @@ describe('Basic templating', function() {
 
         var template = [
             "label",
-            "   input"
+            "   input$controls"
         ];
 
         var nodes = $("<div></div><div></div>");
@@ -38,6 +38,7 @@ describe('Basic templating', function() {
         var expected = "<div><label><input></label></div><div><label><input></label></div>";
         expect(parent.html()).toBe(expected);
         expect(returned instanceof $).toBe(true);
+        expect(returned.cache.controls.length).toBe(2);
     });
 
     it('should nest DOM elements', function() {

@@ -271,8 +271,23 @@
     $.tmpl = tmpl;
 
     $.fn.tmpl = function(template, data, partials) {
-        return this.empty().each(function() {
-            $(this).append(tmpl(template, data, partials));
+
+        var self = this;
+        var cache = self.c = self.cache = self.c || {};
+        var compiled;
+        var key;
+
+        return self.each(function() {
+            compiled = tmpl(template, data, partials);
+            $(this).append(compiled);
+
+            for (key in compiled.c) {
+                if (cache[key]) {
+                    cache[key].push(compiled.c[key]);
+                } else {
+                    cache[key] = compiled.c[key];
+                }
+            }
         });
     };
 

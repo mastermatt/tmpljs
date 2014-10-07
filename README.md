@@ -6,50 +6,74 @@ A DOM element based templating engine, as a jQuery plugin, with a logic-less Zen
 I wrote this because it seemed silly to create a string of markup, make the DOM parse it, then query it to do any manipulation; when it's faster to create elements in js, save a reference if desired, then pass objects to the DOM.
 
 * The plugin requires only one parameter, an array of strings, where each string is to become a single DOM element.
-* Optionally a second object parameter can be supplied for partials and variables.
+* Optionally, data can be supplied for partials and variables.
 * A jQuery object is returned.
 
-###Abbreviations###
+###Usage###
 A [Zen Coding](http://code.google.com/p/zen-coding/) like abbreviation engine is used that resembles CSS selector for tag name, ID, class and explicit attributes.
-`div#page.section.main[data-main=cat in the hat]`
-becomes
-```html
-<div id="page" class="section main" data-main="cat in the hat"></div>
+
+```javascript
+var template = [
+    "h1.center Hello world!",
+    "p#content Cat in the hat."
+];
+
+$("body").tmpl(template);
 ```
-
-A div tag name can be omitted when writing elements that have attributes declared.
-
-The HTML of an element can be set by placing a space between the tag or any attributes and the text itself.
-`.section Lorem Ipsum`
-becomes
 ```html
-<div class="section">Lorem Ipsum</div>
+<html>
+<body>
+  <h1 class="center">Hello World!</h1>
+  <p id="content">Cat in the hat.</p>
+</body>
+</html>
 ```
+This will get you pretty far, but what fun are templates without variables.
+```javascript
+var template = [
+    "h1.center Hello world!",
+    "p#content {animal} in the {covering}."
+];
 
-**Note:** If the element is an input or textarea, the value will be set instead of the innerHTML.
+var data = {
+    animal: "Cat",
+    covering: function() {
+        return "hat";
+    }
+};
+
+$("body").tmpl(template, data);
+```
+Each string in the template array renders into a DOM element. Start with the tag name, defaults to a div if not specified, followed by an attributes for the node and any text at the end after a space. 
+`#page.section.main Lorem Ipsum`
+```html
+<div id="page" class="section main">Lorem Ipsum</div>
+```
+If the element is an input or textarea, the _value_ will be set instead of the _innerHTML_.
+`input.small[placeholder=123 Main St.][disabled] 1600 Pennsylvania Ave`
+```html 
+<input class="small" placeholder="123 Main St." disabled value="1600 Pennsylvania Ave />
+```
 
 ###Hierarchy###
 The hierarchy of the returned elements is based on the empty space that starts the string.
 The standard 4 spaces becomes a new indent.
 
 ```js
-var
-  template =
-  [
+var template = [
     "div",
     "   .hello This div has a class of 'hello'",
     "   p.world oh yeah",
     "   form#mainForm",
-    "       input$myinput Default text",
+    "       input$myInput Default text",
     "div",
     "   p$wrapper",
     "       span Some Text!"
-  ],
-  compiled = $.tmpl( template );
-
-  $("body").append( compiled );
+  ];
+  
+var compiled = $.tmpl( template );
+$("body").append( compiled );
 ```
-becomes
 ```html
 <body>
   <div>
@@ -67,12 +91,12 @@ becomes
 </body>
 ```
 ###Caching Objects###
-Elements can be cached as jQuery objects using the `$` indicator. Notice in the last example the input has `$myinput`,
+Elements can be cached as jQuery objects using the `$` indicator. Notice in the last example the input has `$myInput`,
 that object can now be accessed via:
 ```js
-compiled.cache.myinput.focus();
+compiled.cache.myInput.focus();
 ```
-*Alias:* `compiled.c.myinput.focus();`
+*Alias:* `compiled.c.myInput.focus();`
 
 **Note:** The order of `#ID`, `$cache`, `.class`, or `[attribute]` does not matter. They just need to be after the optional tag name and before the space that signifies the beginning of any content text.
 
@@ -98,33 +122,35 @@ The function should return a string or something that equates to one.
 the data object.
 
 ```js
-var
-  template =
-  [
+var template = [
     "div",
     "   .hello This div has a class of 'hello'",
-    "   getTag(p).world {myvar} yeah",
+    "   getTag(p).world {myNar} yeah",
     "   form#mainForm",
-    "       input$theinput Default text",
+    "       input$theInput Default text",
     "div",
     "   p$wrapper",
-    "       span {x.getSomeText}"
-  ],
+    "       span {person.getGreeting}"
+];
 
-  data =
-  {
-      myvar: "oh",
-      getTag: function(tag){return document.createElement(tag)},
-      text: "Some Text!",
-      x: {
-          getSomeText: function(){return this.text; }
-      }
-  };
+var data = {
+    myNar: "oh",
+    getTag: function(tag) {
+        return document.createElement(tag)
+    },
+    greeting: "hello",
+    person: {
+        name: "James Bond",
+        getGreeting: function() {
+            return this.greeting + " " + this.person.name;
+        }
+    }
+};
 
-  $("body").append( $.tmpl( template, data ) );
+$("body").tmpl(template, data);
 ```
-becomes
 ```html
+<html>
 <body>
   <div>
     <div class="hello">This div has a class of 'hello'</div>
@@ -135,10 +161,11 @@ becomes
   </div>
   <div>
     <p>
-      <span>Some Text!</span>
+      <span>hello James Bond</span>
     </p>
   </div>
 </body>
+</html>
 ```
 **NOTE:** Literal curly brackets can be displayed by adding a bang (!) directly after the 
 opening bracket. `{!cat}` -> `{cat}`

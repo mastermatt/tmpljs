@@ -1,5 +1,5 @@
 /*
- * tmpljs 0.12.0
+ * tmpljs
  * A DOM element based templating engine with
  *  a logic-less Zen Coding-like markup, object caching, partials and variables
  *
@@ -11,6 +11,8 @@
 (function($) {
 
     "use strict";
+
+    var version = "0.12.1";
 
     // set the `value` property instead of `innerHTML` for these tags
     var setValuesFor = ["input", "textarea"];
@@ -267,6 +269,8 @@
         return ret;
     };
 
+    tmpl.version = version;
+
     // Add as a jQuery plugin
     $.tmpl = tmpl;
 
@@ -283,7 +287,7 @@
 
             for (key in compiled.c) {
                 if (cache[key]) {
-                    cache[key].push(compiled.c[key]);
+                    cache[key].push(compiled.c[key][0]);
                 } else {
                     cache[key] = compiled.c[key];
                 }

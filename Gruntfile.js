@@ -2,9 +2,15 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
 
+        version: {
+            dist: {
+                src: 'tmpl.js'
+            }
+        },
+
         uglify: {
             options: {
-                banner: '/*! <%= pkg.name %> <%= pkg.version %> */\n',
+                banner: '/*! <%= pkg.name %> <%= pkg.version %> <%= pkg.homepage %> */\n',
                 report: 'min'
             },
             dist: {
@@ -27,8 +33,10 @@ module.exports = function(grunt) {
         }
     });
 
+    grunt.loadNpmTasks('grunt-version');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jasmine');
+    grunt.loadNpmTasks('grunt-jquerymanifest');
 
-    grunt.registerTask('default', [ 'jasmine', 'uglify']);
+    grunt.registerTask('default', [ 'version', 'jasmine', 'uglify', 'jquerymanifest']);
 };

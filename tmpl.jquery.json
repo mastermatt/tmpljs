@@ -1,0 +1,29 @@
+{
+  "name": "tmpl",
+  "version": "0.12.1",
+  "title": "tmpl",
+  "author": {
+    "name": "Matt R. Wilson",
+    "email": "matt@mattw.co",
+    "url": "http://mattw.co"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/mit-license.php"
+    }
+  ],
+  "dependencies": {
+    "jquery": ">=1.4.0"
+  },
+  "description": "A DOM element based templating engine with a logic-less Zen Coding-like markup, object caching, partials and variables",
+  "keywords": [
+    "jQuery",
+    "render",
+    "templates",
+    "templating",
+    "ui"
+  ],
+  "bugs": "https://github.com/mastermatt/tmpljs/issues",
+  "homepage": "https://github.com/mastermatt/tmpljs"
+}

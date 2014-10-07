@@ -44,7 +44,7 @@ var data = {
 
 $("body").tmpl(template, data);
 ```
-Each string in the template array renders into a DOM element. Start with the tag name, defaults to a div if not specified, followed by an attributes for the node and any text at the end after a space. 
+Each string in the template array renders into a DOM element. Start with the tag name, defaults to a div if not specified, followed by any attributes for the node and any text at the end after a space. 
 `#page.section.main Lorem Ipsum`
 ```html
 <div id="page" class="section main">Lorem Ipsum</div>
@@ -52,7 +52,7 @@ Each string in the template array renders into a DOM element. Start with the tag
 If the element is an input or textarea, the _value_ will be set instead of the _innerHTML_.
 `input.small[placeholder=123 Main St.][disabled] 1600 Pennsylvania Ave`
 ```html 
-<input class="small" placeholder="123 Main St." disabled value="1600 Pennsylvania Ave />
+<input class="small" placeholder="123 Main St." disabled value="1600 Pennsylvania Ave" />
 ```
 
 ###Hierarchy###

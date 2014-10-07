@@ -167,5 +167,35 @@ $("body").tmpl(template, data);
 </body>
 </html>
 ```
-**NOTE:** Literal curly brackets can be displayed by adding a bang (!) directly after the 
-opening bracket. `{!cat}` -> `{cat}`
+
+By default, all variables are HTML escaped. A `&` can be placed just inside opening braces to 
+render the variable without escaping or a `!` to ignore the bracket for variable substitution 
+altogether. 
+
+```javascript
+var data = {
+    "name": "James Bond",
+    "agency": "<b>MI6</b>"
+}
+ 
+var template = [
+    "li { name }",
+    "li { spouse }",
+    "li { agency }",
+    "li {& agency }",
+    "li {! agency }"
+];
+
+$("ul").tmpl(template, data);
+```
+```html
+<ul>
+    <li>James Bond</li>
+    <li></li>
+    <li>&lt;b&gt;MI6&lt;/b&gt;</li>
+    <li>
+        <b>MI6</b>
+    </li>
+    <li>{agency}</li>
+</ul>
+```

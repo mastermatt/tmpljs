@@ -10,7 +10,7 @@ I wrote this because it seemed silly to create a string of markup, make the DOM 
 * A jQuery object is returned.
 
 ###Usage###
-A [Zen Coding](http://code.google.com/p/zen-coding/) like abbreviation engine is used that resembles CSS selector for tag name, ID, class and explicit attributes.
+A [Zen Coding](http://code.google.com/p/zen-coding/) like abbreviation engine is used that resembles CSS selectors for tag name, ID, class and explicit attributes.
 
 ```javascript
 var template = [
@@ -196,6 +196,6 @@ $("ul").tmpl(template, data);
     <li>
         <b>MI6</b>
     </li>
-    <li>{agency}</li>
+    <li>{ agency }</li>
 </ul>
 ```
